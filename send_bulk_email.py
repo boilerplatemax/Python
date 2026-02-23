@@ -23,7 +23,8 @@ leads.csv format:
 messages.csv format:
     - Two columns: subject, body
     - Header row expected: subject,body
-    - 'body' supports multiline text (use quoted fields) and the {name} placeholder
+    - Both 'subject' and 'body' support the {name} placeholder for personalisation
+    - 'body' also supports multiline text (use quoted fields)
     - Each row is a different message variation
 
 Output:
@@ -105,9 +106,10 @@ def load_messages(csv_path: str = "messages.csv") -> list[tuple[str, str]]:
     """
     Read (subject, body) pairs from a CSV file.
 
-    Expects a header row with 'subject' and 'body' columns.  The body field
-    may contain newlines (standard quoted CSV multi-line values).  The {name}
-    placeholder is substituted at send time.
+    Expects a header row with 'subject' and 'body' columns.  Both fields
+    support the {name} placeholder, which is substituted per-recipient at send
+    time.  The body field may also contain newlines (standard quoted CSV
+    multi-line values).
     """
     path = Path(csv_path)
     if not path.exists():
@@ -252,11 +254,12 @@ def main() -> None:
                 continue
 
             body = body_template.replace("{name}", name)
+            personalised_subject = subject.replace("{name}", name)
 
             message = Mail(
                 from_email=From(from_email, from_name),
                 to_emails=email,
-                subject=subject,
+                subject=personalised_subject,
                 plain_text_content=body,
             )
 
